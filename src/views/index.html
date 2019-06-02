@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Checkout</title>
+    <link rel="stylesheet" href="https://meyerweb.com/eric/tools/css/reset/reset.css" type="text/css" charset="utf-8">
+    <style type="text/css">
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-size: 100%;
+}
+
+h3 {
+  font-weight: bold;
+  padding: 1rem 0.25rem;
+}
+
+.wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-flow: wrap row;
+  justify-content: center;
+  align-items: center;
+  padding: 12vh 0;
+}
+
+.wrapper .container {
+  flex: 0 0 90%;
+  display: flex;
+  flex-flow: wrap row;
+  justify-content: center;
+}
+
+@media screen and (min-width: 768px) {
+  .wrapper .container {
+    flex-basis: 50%;
+  }
+}
+
+.wrapper input,
+.wrapper hr,
+.wrapper select,
+.wrapper fieldset,
+.wrapper label {
+  flex: 0 0 100% !important;
+}
+
+.wrapper h3 {
+  text-align: center;
+}
+
+.wrapper label {
+  padding: 0.5rem 0;
+}
+
+.wrapper input,
+.wrapper select {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+}
+
+.wrapper select {
+  padding: 0.5rem;
+}
+
+.wrapper hr {
+  margin: 2rem 0;
+  opacity: 0.5;
+}
+
+.wrapper button {
+  padding: 0.75rem 0;
+  font-size: 1.15rem;
+  flex: 0 0 50%;
+  background-color: green;
+  border: none;
+  border-bottom: solid 5px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  margin-top: 1.5rem;
+}
+
+.wrapper button:active {
+  border-bottom-width: 1px;
+}
+
+@media screen and (min-width: 768px) {
+  .wrapper button {
+    flex-basis: 35%;
+  }
+}
+
+.payment-status {
+  flex: 0 0 100%;
+  color: #fff;
+  text-align: center;
+  padding: 0.75rem;
+  border: solid 5px rgba(0, 0, 0, 0.2);
+}
+
+.payment-status.success {
+  background-color: green;
+}
+
+.payment-status.error {
+  background-color: red;
+}
+
+.is-hidden {
+  display: none !important;
+}
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <div class="payment-success-container container is-hidden">
+        <h3>Payment done!</h3>
+
+        <label for="payment-code">Your payment's code:</label>
+        <input type="text" value="" id="payment-code" disabled/>
+
+        <button id="check-payment">Check payment status!</button>
+
+        <span class="payment-status success is-hidden">Payment processed successfully!</span>
+
+        <span class="payment-status error is-hidden">Payment wasn't accepted :(</span>
+      </div>
+
+      <form class="container" method="POST" id="main-form">
+        <h3>About you</h3>
+
+        <label for="name">Name</label>
+        <input type="text" value="" placeholder="Your name here!" id="name"/>
+
+        <label for="email">E-mail</label>
+        <input type="email" value="" placeholder="Your email" required id="email"/>
+
+        <label for="cpf">CPF</label>
+        <input type="text" value="" placeholder="Your CPF" required id="cpf"/>
+
+        <hr>
+
+        <h3>Product</h3>
+
+        <label for="amount">Amount</label>
+        <input type="number" step="0.01" min="0" value="100" placeholder="Input the amount you're paying" required id="amount"/>
+
+        <label for="method-selector">Select your payment method</label>
+        <select placeholder="Select your payment method" id="method-selector" size="1">
+          <option value="boleto">Boleto</option>
+          <option value="credit-card">Credit Card</option>
+        </select>
+
+        <fieldset id="credit-card-info" class="container is-hidden">
+          <hr>
+
+          <h3>Credit Card Info</h3>
+
+          <label for="holder-name">Holder Name</label>
+          <input type="text" value="" id="holder-name" placeholder="Credit card holder name"/>
+
+          <label for="number">Credit Card Number</label>
+          <input type="text" value="" id="number" placeholder="Credit card number"/>
+
+          <label for="expiration-date">Expiration Date</label>
+          <input type="text" value="" id="expiration-date" placeholder="Credit card expiration date"/>
+
+          <label for="cvv">CVV - Located behind your credit card</label>
+          <input type="number" min="0" value="" id="cvv" placeholder="Credit card CVV"/>
+        </fieldset>
+
+        <button>Buy!</button>
+      </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="http://igorescobar.github.io/jQuery-Mask-Plugin/js/jquery.mask.min.js"></script>
+ 
+    <script charset="utf-8">
+      $(document).ready(function () {
+        $('#number').mask('0000 0000 0000 0000');
+        $('#expiration-date').mask('00/00');
+
+        $('#method-selector').on('change', function (e) {
+          var optionSelected = $("option:selected", this);
+          var valueSelected = this.value;
+          var creditCardFieldset = $('#credit-card-info');
+
+          if (valueSelected === 'credit-card') {
+            creditCardFieldset.removeClass('is-hidden');
+            creditCardFieldset.children('input').attr('required', true);
+          } else if (creditCardFieldset.hasClass('is-hidden') === false) {
+            creditCardFieldset.addClass('is-hidden');
+            creditCardFieldset.children('input').attr('required', false);
+          }
+        });
+
+        var mainForm = $('#main-form');
+        function getFormData () {
+          var inputs = {
+            name: '#name',
+            email: '#email',
+            cpf: '#cpf',
+            amount: '#amount',
+            method: '#method-selector',
+            holderName: '#holder-name',
+            number: '#number',
+            expirationDate: '#expiration-date',
+            cvv: '#cvv'
+          }
+
+          Object
+            .keys(inputs)
+            .forEach(function (key) {
+              var id = inputs[key];
+              var value = $(id).val();
+              inputs[key] = value;
+            })
+
+          inputs.customerId = Math.floor(Math.random() * 10);
+          inputs.buyer = {
+            name: inputs.name,
+            email: inputs.email,
+            cpf: inputs.cpf
+          };
+
+          inputs.card = {
+            holderName: inputs.holderName,
+            number: inputs.number,
+            expirationDate: inputs.expirationDate,
+            cvv: inputs.cvv
+          };
+
+          return inputs;
+        };
+        mainForm.submit(function (e) {
+          e.preventDefault();
+          var data = getFormData();
+          var url = 'http://localhost:8080/api/payments';
+
+          $.post(url, data, function (response) {
+            window.responseapi = response;
+            console.log('done')
+
+            if (response.status === 'ok') {
+              $('#payment-code').attr('value', response.content.id);
+
+              $('.payment-success-container').removeClass('is-hidden');
+              mainForm.addClass('is-hidden');
+            }
+          });
+        });
+
+        $('#check-payment').on('click', function (e) {
+          var id = $('#payment-code').val();
+          var url = 'http://localhost:8080/api/payments/' + id + '/status';
+          $.get(url, function (response) {
+            window.responseapi = response;
+            console.log('done')
+
+            if (response.status === 'ok') {
+              $('#payment-code').attr('value', response.content.id);
+              var subClassToShow = response.content && response.content.status === 'paid' ? '.success' : '.error';
+
+              $('.payment-status' + subClassToShow).removeClass('is-hidden');
+              $('#check-payment').addClass('is-hidden');
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
